@@ -1,31 +1,28 @@
 package src;
 import java.util.List;
 public class Card {
-    private String suit;
-    private String rank;
-    private List<Integer> value;
+    private Suit suit;
+    private Rank rank;
 
-
-    public Card(String suit, String rank, List<Integer> value){
+    public Card(Suit suit, Rank rank){
         this.suit = suit;
         this.rank = rank;
-        this.value = value;
     }
 
     public String getSuit(){
-        return this.suit;
+        return this.suit.getSymbol();
     }
 
     public String getRank(){
-        return this.rank;
+        return this.rank.getSymbol();
     }
 
     public List<Integer> getValue(){
-        return this.value;
+        return this.rank.getValues();
     }
 
     @Override
     public String toString(){
-         return getRank()+" "+getSuit();
+        return getRank()+" "+getSuit();
     }
 }

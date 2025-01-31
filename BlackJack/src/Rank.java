@@ -1,35 +1,33 @@
 package src;
 
-import java.util.*;
-
 public enum Rank {
-    TWO("2", Arrays.asList(2)),
-    THREE("3", Arrays.asList(3)),
-    FOUR("4", Arrays.asList(4)),
-    FIVE("5", Arrays.asList(5)),
-    SIX("6", Arrays.asList(6)),
-    SEVEN("7", Arrays.asList(7)),
-    EIGHT("8", Arrays.asList(8)),
-    NINE("9", Arrays.asList(9)),
-    TEN("10", Arrays.asList(10)),
-    JACK("J", Arrays.asList(10)),
-    QUEEN("Q", Arrays.asList(10)),
-    KING("K", Arrays.asList(10)),
-    ACE("A", Arrays.asList(1, 11));
+    TWO("2", 2),
+    THREE("3", 3),
+    FOUR("4", 4),
+    FIVE("5", 5),
+    SIX("6", 6),
+    SEVEN("7", 7),
+    EIGHT("8", 8),
+    NINE("9", 9),
+    TEN("10", 10),
+    JACK("J", 10),
+    QUEEN("Q", 10),
+    KING("K", 10),
+    ACE("A", 11); 
 
     private final String symbol;
-    private final List<Integer> values;
+    private final int value;
 
-    Rank(String symbol, List<Integer> values) {
+    Rank(String symbol, int value) {
         this.symbol = symbol;
-        this.values = values;
+        this.value = value;
     }
 
     public String getSymbol() {
         return this.symbol;
     }
 
-    public List<Integer> getValues() {
-        return values;
+    public int getValue() {
+        return value;
     }
 }

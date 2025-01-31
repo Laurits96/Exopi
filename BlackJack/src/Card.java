@@ -1,5 +1,4 @@
 package src;
-import java.util.List;
 public class Card {
     private Suit suit;
     private Rank rank;
@@ -17,8 +16,8 @@ public class Card {
         return this.rank.getSymbol();
     }
 
-    public List<Integer> getValue(){
-        return this.rank.getValues();
+    public int getValue(){
+        return this.rank.getValue();
     }
 
     @Override

@@ -11,8 +11,8 @@ public abstract class AbstractPerson implements Person{
     }
 
     @Override
-    public Hand getHand(){
-        return this.hands.get(0);
+    public Hand getHand(int index){
+        return this.hands.get(index);
     }
 
     @Override
@@ -21,8 +21,14 @@ public abstract class AbstractPerson implements Person{
     }
 
     @Override
+    public void addToHand(Card card, int index){
+        this.hands.get(index).add(card);
+    }
+
+    @Override
     public void clearHands(){
         this.hands.clear();
+        this.hands.add(new Hand());
     };
 
     public void printHand(){

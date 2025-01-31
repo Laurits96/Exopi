@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import javax.swing.*;
 
@@ -83,6 +82,8 @@ public class View extends JFrame implements PropertyChangeListener {
 		hitButton.setToolTipText("Hit, and get another card");
 		splitButton.setEnabled(false);
 		splitButton.setToolTipText("Only usable when starting hand consist of cards with the same value");
+		forfeitButton.setEnabled(false);
+		forfeitButton.setToolTipText("Forfeit the current hand, adn loose half your bet");
 		addPlayerButton.setToolTipText("Add a new player to the game");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -102,35 +103,35 @@ public class View extends JFrame implements PropertyChangeListener {
 		} 
 		else if ("dealt".equals(evt.getPropertyName())){
 			dealerHand.setText(model.getDealer().getHand(0).handToString());
-			dealerHand.revalidate();
-			dealerHand.repaint();
+			redo(dealerHand);
 			this.model.getPlayers().stream().forEach(player -> {
 				updatePlayerHandLabel(player);
 				redo(playerHandLabels.get(player.getID()-1).get(0));
 			});
-			
+			updatePlayerLabel();
+			enableForfeitButton();
 		}
 		else if("nextTurn".equals(evt.getPropertyName())){
 			updatePlayerLabel();
+			enableForfeitButton();
 		}
-		else if ("dealer won".equals(evt.getPropertyName())){
-			JOptionPane.showMessageDialog(this, "Dealer won");
-			this.model.dealCard();
-
-		}		
-		else if ("Player lost".equals(evt.getPropertyName())){
-			JOptionPane.showMessageDialog(this, "Player lost");
-			this.model.reset();
-		} 
 		else if ("show winners".equals(evt.getPropertyName())){
 			JOptionPane.showMessageDialog(this, (String) evt.getNewValue());
 			this.model.reset();
+			enableAddPlayerButton();
 		}
 		else if ("newPlayer".equals(evt.getPropertyName())){
 			addSinglePlayerInfo(this.model.getPlayers().get((int)evt.getNewValue()-1));
 		}
 		else if ("split".equals(evt.getPropertyName())){
 			enablesplitButton();
+		}
+		else if("reset".equals(evt.getPropertyName())){
+			dealerHand.setText(model.getDealer().getHand(0).handToString());
+			redo(dealerHand);
+			resetAllPlayerHandLabel();
+			enableAddPlayerButton();
+			disableForfeitButton();
 		}
 	}
 
@@ -193,10 +194,28 @@ public class View extends JFrame implements PropertyChangeListener {
 
 	public void updatePlayerHandLabel(Player player){
 		this.playerHandLabels.get(player.getID()-1).forEach(playerHandLabel -> {
-			int index = this.playerHandLabels.get(player.getID()-1).indexOf(playerHandLabel);
-    		playerHandLabel.setText(player.getHand(index).handToString());
+			System.out.println("piss off: " + (this.playerHandLabels.get(player.getID()-1).indexOf(playerHandLabel)));
+    		playerHandLabel.setText(player.getHand(this.playerHandLabels.get(player.getID()-1).indexOf(playerHandLabel)).handToString());
 			redo(playerHandLabel);
 		});
+		System.out.println("");
+	}
+
+	public void resetAllPlayerHandLabel() {
+	    this.playerHandLabels.forEach(playerHandLabel -> {
+	        if (playerHandLabel.size() > 1) {
+	            playerHandLabel.subList(1, playerHandLabel.size()).forEach(label->{
+					remove(label);
+				});;
+				playerHandLabel.subList(1, playerHandLabel.size()).clear();
+	        }
+	        // Reset the text of the first element
+	        if (!playerHandLabel.isEmpty()) {
+	            playerHandLabel.get(0).setText("");
+	        }
+	    });
+		revalidate();
+		repaint();
 	}
 
 	public void updatePlayerLabel(){
@@ -255,5 +274,13 @@ public class View extends JFrame implements PropertyChangeListener {
 
 	public void enableAddPlayerButton() {
 	    addPlayerButton.setEnabled(true);
+	}
+
+	public void enableForfeitButton() {
+	    forfeitButton.setEnabled(true);
+	}
+
+	public void disableForfeitButton() {
+	    forfeitButton.setEnabled(false);
 	}
 }

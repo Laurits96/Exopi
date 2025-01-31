@@ -37,10 +37,11 @@ public class Controller {
         });
         this.view.addSplitHand(this.model.getPlayers().get(this.model.getPlayerTurn()));
         this.view.disableSplitButton();
+        this.view.disableForfeitButton();
     }
 
     private void handleForfeitButton(){
-        System.out.println("Forfeit not yet implemented");
+        this.model.forfeit(this.model.getPlayers().get(this.model.getPlayerTurn()));
     }
 
     private void handleAddPlayerButton(){

@@ -44,9 +44,7 @@ public class Model{
         this.playersTurn++;
         if (this.playersTurn == this.players.size()){
             this.dealerHit();
-
         }else {
-            
             this.playersNumberOfHands = 0;
             support.firePropertyChange("nextTurn", null, null);
             if (this.players.get(this.playersTurn).getHand(0).isSameRank()){
@@ -57,11 +55,12 @@ public class Model{
 
     public void dealCard(){
         this.dealer.addToHand(this.deck.pickCard());
+        // this.dealer.addToHand(new Card(Suit.DIAMONDS, Rank.ACE));
         this.players.stream().forEach(player -> {
-            player.addToHand(new Card(Suit.CLUBS, Rank.TEN));
-            player.addToHand(new Card(Suit.HEARTS, Rank.TEN));
-            // player.addToHand(this.deck.pickCard());
-            // player.addToHand(this.deck.pickCard());
+            // player.addToHand(new Card(Suit.CLUBS, Rank.TEN));
+            // player.addToHand(new Card(Suit.HEARTS, Rank.TEN));
+            player.addToHand(this.deck.pickCard());
+            player.addToHand(this.deck.pickCard());
         });     
         support.firePropertyChange("dealt", null, null);
         if (this.players.get(0).getHand(0).isSameRank()){
@@ -97,12 +96,24 @@ public class Model{
         support.firePropertyChange("show winners", null, this.findWinners());
     }
 
+    public void forfeit(Player player){
+        player.setForfeited(true);
+        player.setBankroll(player.getHand(0).getBet()*0.5);
+        this.nextPlayer();
+    }
+
     public String findWinners(){
         StringBuilder result = new StringBuilder();
         if (this.dealer.getHand(0).isBust()){
             return this.dealerBust(result);
-        } else if(this.dealer.getHand(0).isBlackJack()){
+        }else if(this.dealer.getHand(0).isBlackJack()){
             return this.dealerBlackJack(result);
+        }else if(this.dealer.getHand(0).sumHand() > 17){
+            if(this.players.stream().allMatch(player -> player.getHand(0).isBust())){
+                result.append("Dealer won all");
+                return result.toString();
+            }
+            return this.dealerStopped(result);
         }
         else{
             result.append("still handling stuff...");
@@ -111,28 +122,27 @@ public class Model{
     }
 
     public String dealerBust(StringBuilder result){
-        result.append("Dealer busts\n");
         getPlayers().stream().forEach(player -> {
             ArrayList<Integer> winningHands = new ArrayList<>();
             player.getAllHands().forEach(hand -> {
-                int index = player.getAllHands().indexOf(hand);
-                if (hand.isBust()){
-                    winningHands.add(0);                                              
-                } 
-                else if (hand.isBlackJack()){
-                    player.setBankroll(player.getHand(index).getBet()*2.5);
-                    winningHands.add(1);
-                } 
-                else{
-                    System.out.println("Bankroll: " + player.getBankroll());
-                    player.setBankroll(player.getHand(index).getBet()*2);
-                    System.out.println("Bankroll: " + player.getBankroll());
-                    winningHands.add(1);
+                if(!player.isForfeited()){
+                    int index = player.getAllHands().indexOf(hand);
+                    if (hand.isBust()){
+                        winningHands.add(0);                                              
+                    } 
+                    else if (hand.isBlackJack()){
+                        player.setBankroll(player.getHand(index).getBet()*2.5);
+                        winningHands.add(1);
+                    } 
+                }else{
+                    player.setBankroll(player.getHand(0).getBet()*0.5);
+                    winningHands.add(0);
                 }
             });
             
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
-                result.append("Player ").append(player.getID()).append(" won ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hands\n");
+                result.append("Dealer busts\n");
+                result.append("Player ").append(player.getID()).append(" won ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hand(s)\n");
             }
         });
         return result.toString();
@@ -149,12 +159,49 @@ public class Model{
                     winningHands.add(1);
                 } 
                 else{
-                    winningHands.add(0);
+                    if(!player.isForfeited()){
+                        player.setBankroll(player.getHand(index).getBet()*0.5);
+                        winningHands.add(1);
+                     }else{
+                        winningHands.add(0);
+                     }
                 }
             });
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
-                result.append("Player ").append(player.getID()).append(" won ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hands\n");
+                result.append("Player ").append(player.getID()).append(" tied with ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hand(s)\n");
             }
+        });
+        return result.toString();
+    }
+
+    public String dealerStopped(StringBuilder result){
+        getPlayers().stream().forEach(player -> {
+            ArrayList<Integer> winningHands = new ArrayList<>();
+            player.getAllHands().forEach(hand -> {
+                int index = player.getAllHands().indexOf(hand);
+                if (hand.isBlackJack()){
+                    player.setBankroll(player.getHand(index).getBet()*2.5);
+                    winningHands.add(1);
+                } 
+                else if(hand.sumHand() > this.dealer.getHand(0).sumHand() || hand.sumHand() == this.dealer.getHand(0).sumHand() || hand.size() == 5){
+                    player.setBankroll(player.getHand(index).getBet()*2);
+                    winningHands.add(1);
+                }
+                else{
+                    if(!player.isForfeited()){
+                        player.setBankroll(player.getHand(index).getBet()*0.5);
+                        winningHands.add(1);
+                    }else{
+                        winningHands.add(0);
+                    }
+                }
+            });
+            if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
+                result.append("Player ").append(player.getID()).append(" won ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hand(s)\n");
+            } else{
+                result.append("Dealer won all");
+            }
+
         });
         return result.toString();
     }
@@ -165,7 +212,7 @@ public class Model{
         this.dealer.getHand(0).clearHand();
         this.playersTurn = 0;
         this.playersNumberOfHands = 0;
-        support.firePropertyChange("dealt", null, null);
+        support.firePropertyChange("reset", null, null);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener pcl) {

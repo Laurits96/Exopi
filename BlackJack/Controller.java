@@ -15,13 +15,20 @@ public class Controller {
     }
 
     private void handleDealButton(){
-        this.model.reset();
-        this.model.dealCard();
-        this.view.disableAddPlayerButton();
+        if (this.view.isBetsPlaced()){
+            this.model.reset();
+            this.model.dealCard();
+            this.model.addBetToPlayers(this.view.betsPlaced());
+            this.view.updatePlayerLabel();
+            this.view.disableAddPlayerButton();
+            this.view.enableHitButton();
+            this.view.enableStandButton();
+            this.view.disableDealButton();
+        }
     }
 
     private void handleStandButton(){
-            this.model.stand();
+        this.model.stand();  
     }
 
     private void handleHitButton(){
@@ -29,15 +36,22 @@ public class Controller {
     }
 
     private void handleSplitButton(){
-        this.model.getPlayers().get(this.model.getPlayerTurn()).splitHand();
-        this.model.getPlayers().get(this.model.getPlayerTurn()).getAllHands().forEach(hand -> {
-            if (hand.size() == 1){
-                hand.add(this.model.getDeck().pickCard());
-            }
-        });
-        this.view.addSplitHand(this.model.getPlayers().get(this.model.getPlayerTurn()));
-        this.view.disableSplitButton();
-        this.view.disableForfeitButton();
+        if(this.model.getPlayers().get(this.model.getPlayerTurn()).getBankroll() >= this.model.getPlayers().get(this.model.getPlayerTurn()).getBet()){
+            this.model.getPlayers().get(this.model.getPlayerTurn()).splitHand();
+            this.model.getPlayers().get(this.model.getPlayerTurn()).getAllHands().forEach(hand -> {
+                if (hand.size() == 1){
+                    hand.add(this.model.getDeck().pickCard());
+                }
+            });
+            this.view.addSplitHand(this.model.getPlayers().get(this.model.getPlayerTurn()));
+            this.model.getPlayers().get(this.model.getPlayerTurn()).setBankroll(-this.model.getPlayers().get(this.model.getPlayerTurn()).getBet());
+            this.view.disableSplitButton();
+            this.view.disableForfeitButton();
+        }
+        else{
+            this.view.showJOptionPane("You can split in spirit, but your bankroll says otherwise.");
+            this.view.disableSplitButton();
+        }
     }
 
     private void handleForfeitButton(){

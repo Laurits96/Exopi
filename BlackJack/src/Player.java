@@ -5,11 +5,13 @@ import java.util.ArrayList;
 public class Player extends AbstractPerson{
     private int id;
     private double bankroll;
+    private double bet;
     private boolean forfeited;
 
     public Player(int id){
         this.id =id;
         this.bankroll = 200;
+        this.bet = 0;
         this.forfeited = false;
     }
 
@@ -27,6 +29,14 @@ public class Player extends AbstractPerson{
 
     public void setBankroll(double bet){
         this.bankroll+=bet;
+    }
+
+    public double getBet(){
+        return this.bet;
+    }
+
+    public void setBet(double bet){
+        this.bet = bet;
     }
 
     public boolean isForfeited() {

@@ -1,9 +1,9 @@
 package src;
 public enum Suit {
-    HEARTS("H"),
-    CLUBS("C"),
-    DIAMONDS("D"),
-    SPADES("S");
+    HEARTS("♥"),
+    CLUBS("♣"),
+    DIAMONDS("♦"),
+    SPADES("♠");
 
     private final String symbol;
 

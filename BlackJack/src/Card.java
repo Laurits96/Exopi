@@ -22,6 +22,6 @@ public class Card {
 
     @Override
     public String toString(){
-        return getRank()+" "+getSuit();
+        return getRank()+getSuit();
     }
 }

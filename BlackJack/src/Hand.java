@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 public class Hand{
     private ArrayList<Card> hand;
-    private int bet;
+    private int aceCount;
 
     public Hand(){
         this.hand = new ArrayList<>();
-        this.bet = 0;
+        this.aceCount = 0;
     }
 
     public Hand(Card card1){
@@ -18,6 +18,9 @@ public class Hand{
 
     public void add(Card card){
         this.hand.add(card);
+        if(card.getRank().equals("A")){
+            this.aceCount++;
+        }
     }
 
     public Card removeCard(int index){
@@ -29,7 +32,17 @@ public class Hand{
     }
 
     public int sumHand(){
-        return this.hand.stream().mapToInt(Card::getValue).sum();
+        if ( aceCount > 0 && this.hand.stream().mapToInt(Card::getValue).sum() > 21){
+            int sum = this.hand.stream().mapToInt(Card::getValue).sum();
+            for (int i = 0; i < aceCount; i++){
+                if (sum > 21){
+                    sum -= 10;
+                }
+            }
+            return sum;
+        }else{
+            return this.hand.stream().mapToInt(Card::getValue).sum();
+        }
     }
 
     public boolean isSameRank(){
@@ -38,14 +51,6 @@ public class Hand{
 
     public boolean isBust(){
         return this.sumHand() > 21;
-    }
-
-    public void placeBet(int bet){
-        this.bet=-bet;
-    }
-
-    public int getBet(){
-        return this.bet;
     }
 
     public boolean isBlackJack(){

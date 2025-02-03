@@ -2,13 +2,20 @@ package src;
 import java.util.*;
 public class Deck {
     private ArrayList<Card> cardDeck;
+    private int noDecks = 0;
     
     public Deck(int noDecks){
-        InitializeDeck();
+        this.cardDeck = new ArrayList<>();
+        this.noDecks = noDecks;
     }
 
     public void InitializeDeck(){
-        this.cardDeck = new ArrayList<>();
+        for (int i = 0; i < noDecks; i++){
+            addDeck();
+        }
+    }
+
+    public void addDeck(){
         for ( Suit suit: Suit.values()){
             for (Rank rank : Rank.values()) {
                 this.cardDeck.add(new Card(suit, rank));

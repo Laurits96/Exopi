@@ -8,9 +8,11 @@ public class Deck {
     public Deck(int noDecks){
         this.cardDeck = new ArrayList<>();
         this.noDecks = noDecks;
+        InitializeDeck();
     }
 
     public void InitializeDeck(){
+        this.cardDeck.clear();
         for (int i = 0; i < noDecks; i++){
             addDeck();
         }
@@ -22,6 +24,7 @@ public class Deck {
                 this.cardDeck.add(new Card(suit, rank));
             }
         }
+        System.out.println("deck size: "+this.getCardDeck().size());
     }
 
     public ArrayList<Card> getCardDeck(){

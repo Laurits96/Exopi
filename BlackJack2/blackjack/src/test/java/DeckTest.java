@@ -11,9 +11,9 @@ public class DeckTest {
 
     @BeforeEach
     void setUp(){
-        noDecks = 4;
-        deck = new Deck(noDecks);
-        deck.InitializeDeck();
+        this.noDecks = 4;
+        this.deck = new Deck(noDecks);
+
     }
 
     @Test
@@ -23,8 +23,14 @@ public class DeckTest {
 
     @Test
     void testPickCard(){
-        deck.pickCard();
-        assertEquals(noDecks*52-1, deck.getCardDeck().size(), "Drawing a card should decrease deck size by 1.");
+        for (int i = 0; i < noDecks*52;i++){
+            Card removed = deck.pickCard();
+            assertEquals(noDecks*52-(i+1), deck.getCardDeck().size(), "Drawing a card should decrease deck size by 1.");
+            deck.getCardDeck().stream().forEach(card -> {
+                assertTrue(!(removed.equals(card)));
+            });
+        }
+        assertEquals(0, deck.getCardDeck().size(), "All cards removed");
     }
 
 

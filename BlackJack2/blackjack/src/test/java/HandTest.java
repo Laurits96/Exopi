@@ -19,5 +19,12 @@ public class HandTest {
         hand.add(new Card(Suit.SPADES, Rank.TEN));
         assertTrue(hand.isSameRank(), "Hand contains two cards of same rank");
     }
+
+    @Test
+    void testAdd(){
+        Card card = new Card(Suit.DIAMONDS, Rank.FIVE);
+        hand.add(card);
+        assertEquals(hand.getCard(0), card);
+    }
     
 }

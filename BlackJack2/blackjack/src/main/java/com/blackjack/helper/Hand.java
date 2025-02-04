@@ -24,6 +24,10 @@ public class Hand{
         }
     }
 
+    public Card getCard(int i){
+        return this.hand.get(i);
+    }
+
     public Card removeCard(int index){
         return this.hand.remove(index);
     }

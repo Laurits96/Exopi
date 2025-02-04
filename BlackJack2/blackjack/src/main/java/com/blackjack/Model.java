@@ -70,10 +70,10 @@ public class Model{
         this.dealer.addToHand(this.deck.pickCard());
         // this.dealer.addToHand(new Card(Suit.DIAMONDS, Rank.ACE));
         this.players.stream().forEach(player -> {
-            player.addToHand(new Card(Suit.CLUBS, Rank.TEN));
-            player.addToHand(new Card(Suit.HEARTS, Rank.TEN));
-            // player.addToHand(this.deck.pickCard());
-            // player.addToHand(this.deck.pickCard());
+            // player.addToHand(new Card(Suit.CLUBS, Rank.TEN));
+            // player.addToHand(new Card(Suit.HEARTS, Rank.TEN));
+            player.addToHand(this.deck.pickCard());
+            player.addToHand(this.deck.pickCard());
         });     
         support.firePropertyChange("dealt", null, null);
         if (this.players.get(0).getHand(0).isSameRank()){
@@ -91,7 +91,6 @@ public class Model{
     }
 
     public void hit(Player player){
-        
         player.addToHand(this.deck.pickCard(), playersNumberOfHands);
         support.firePropertyChange("player", null,player);
         if (player.getHand(playersNumberOfHands).isBust()){ 

@@ -68,10 +68,7 @@ public class Model{
 
     public void dealCard(){
         this.dealer.addToHand(this.deck.pickCard());
-        // this.dealer.addToHand(new Card(Suit.DIAMONDS, Rank.ACE));
         this.players.stream().forEach(player -> {
-            // player.addToHand(new Card(Suit.CLUBS, Rank.TEN));
-            // player.addToHand(new Card(Suit.HEARTS, Rank.TEN));
             player.addToHand(this.deck.pickCard());
             player.addToHand(this.deck.pickCard());
         });     
@@ -125,9 +122,11 @@ public class Model{
         StringBuilder result = new StringBuilder();
         if (this.dealer.getHand(0).isBust()){
             return this.dealerBust(result);
-        }else if(this.dealer.getHand(0).isBlackJack()){
+        }
+        else if(this.dealer.getHand(0).isBlackJack()){
             return this.dealerBlackJack(result);
-        }else if(this.dealer.getHand(0).sumHand() >= 17){
+        }
+        else if(this.dealer.getHand(0).sumHand() >= 17){
             if(this.players.stream().allMatch(player -> player.getHand(0).isBust())){
                 result.append("Dealer won all");
                 return result.toString();
@@ -152,16 +151,17 @@ public class Model{
                     else if (hand.isBlackJack()){
                         player.setBankroll(player.getBet()*2.5);
                         winningHands.add(1);
-                    } else{
+                    } 
+                    else{
                         player.setBankroll(player.getBet()*2);
                         winningHands.add(1);
                     }
-                }else{
+                }
+                else{
                     player.setBankroll(player.getBet()*0.5);
                     winningHands.add(0);
                 }
             });
-            
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
                 result.append("Player ").append(player.getID()).append(" won ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hand(s)\n");
             }
@@ -179,12 +179,14 @@ public class Model{
                     winningHands.add(1);
                 } 
                 else{
-                    if(!player.isForfeited()){
+                    if(player.isForfeited()){
                         player.setBankroll(player.getBet()*0.5);
                         winningHands.add(1);
-                     }else{
+                    }
+                    else{
+                        System.out.println("");
                         winningHands.add(0);
-                     }
+                    }
                 }
             });
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
@@ -196,7 +198,6 @@ public class Model{
 
     public String dealerStopped(StringBuilder result){
         result.append("Dealer stopped at " + dealer.getHand(0).sumHand()+ "\n");
-        final int[] numberPlayersWon = {0};
         getPlayers().stream().forEach(player -> {
             ArrayList<Integer> winningHands = new ArrayList<>();
             player.getAllHands().forEach(hand -> {
@@ -216,17 +217,17 @@ public class Model{
                     else{
                         winningHands.add(0);
                     }
-                }else{
+                }
+                else{
                     player.setBankroll(player.getBet()*0.5);
                     winningHands.add(0);
                 }
             });
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
                 result.append("Player ").append(player.getID()).append(" won ").append(winningHands.stream().filter(x -> x == 1).count()).append(" hand(s)\n");
-                numberPlayersWon[0] += 1;
             } 
         });
-        if(numberPlayersWon[0] == 0){
+        if(!(result.toString().contains("Player"))){
             result.append("Dealer won all");
         }
         return result.toString();
@@ -234,11 +235,11 @@ public class Model{
 
     public boolean isAllForfeit(){
         for (Player player : this.players ){
-            if (player.isForfeited()){
-                return true;
+            if (!player.isForfeited()){
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     public void reset(){

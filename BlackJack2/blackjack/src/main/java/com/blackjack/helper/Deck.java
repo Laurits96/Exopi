@@ -24,7 +24,6 @@ public class Deck {
                 this.cardDeck.add(new Card(suit, rank));
             }
         }
-        System.out.println("deck size: "+this.getCardDeck().size());
     }
 
     public ArrayList<Card> getCardDeck(){

@@ -1,9 +1,7 @@
+import com.blackjack.helper.*;
 import com.blackjack.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,5 +34,47 @@ public class ModelTest {
         assertTrue(model.getPlayers().get(model.getPlayerTurn()).getHand(0).size()==2);
         model.hit(model.getPlayers().get(model.getPlayerTurn()));
         assertTrue(model.getPlayers().get(model.getPlayerTurn()).getHand(0).size()==3);
+    }
+
+    @Test
+    void testDealerBust(){
+        StringBuilder result = new StringBuilder();
+        model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
+        model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.SIX));
+        model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.NINE));
+        model.getPlayers().get(model.getPlayerTurn()).addToHand(new Card(Suit.SPADES, Rank.FIVE));
+        model.getPlayers().get(model.getPlayerTurn()).addToHand(new Card(Suit.HEARTS, Rank.JACK));
+        String output = model.dealerBust(result);
+        assertTrue(output.contains("Player 1 won"));
+    }
+
+    @Test
+    void testDealerBlackJack(){
+        StringBuilder result = new StringBuilder();
+        model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
+        model.getDealer().addToHand(new Card(Suit.HEARTS, Rank.ACE));
+        model.getPlayers().get(0).addToHand(new Card(Suit.SPADES, Rank.FIVE));
+        model.getPlayers().get(0).addToHand(new Card(Suit.HEARTS, Rank.JACK));
+        model.addPlayer();
+        model.getPlayers().get(1).addToHand(new Card(Suit.HEARTS, Rank.QUEEN));
+        model.getPlayers().get(1).addToHand(new Card(Suit.SPADES, Rank.ACE));
+        String output = model.dealerBlackJack(result);
+        assertTrue(output.contains("Player 2 tied with"));
+        assertFalse(output.contains("Player 1 tied with"));
+    }
+
+    @Test
+    void testDealerStopped(){
+        StringBuilder result = new StringBuilder();
+        model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
+        model.getDealer().addToHand(new Card(Suit.HEARTS, Rank.SEVEN));
+        model.getPlayers().get(0).addToHand(new Card(Suit.SPADES, Rank.FIVE));
+        model.getPlayers().get(0).addToHand(new Card(Suit.HEARTS, Rank.JACK));
+        model.addPlayer();
+        model.getPlayers().get(1).addToHand(new Card(Suit.HEARTS, Rank.QUEEN));
+        model.getPlayers().get(1).addToHand(new Card(Suit.SPADES, Rank.NINE));
+        String output = model.dealerStopped(result);
+        assertTrue(output.contains("Player 2 won"));
+        assertFalse(output.contains("Player 1 won"));
     }
 }

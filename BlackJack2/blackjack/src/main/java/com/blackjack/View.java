@@ -56,7 +56,6 @@ public class View extends JFrame implements PropertyChangeListener {
 		dealer.setBounds(50, 20, 100, 30);
 		dealer.setBorder(new MatteBorder(0, 0, 2, 0, Color.WHITE));
 		dealerHand.setBounds(50, 60, 400, 30);
-		
 		dealButton.setBounds(220, 20, 100, 30);
 		standButton.setBounds(220, 220, 100, 30);
 		hitButton.setBounds(50, 220, 100, 30);
@@ -126,7 +125,8 @@ public class View extends JFrame implements PropertyChangeListener {
 		else if ("show winners".equals(evt.getPropertyName())){
 			if ((boolean) evt.getOldValue()){
 				showJOptionPane("Folding already? Dealer wins—without lifting a finger!");
-			}else{
+			}
+			else{
 				showJOptionPane((String) evt.getNewValue());
 			}
 			this.model.reset();
@@ -175,15 +175,16 @@ public class View extends JFrame implements PropertyChangeListener {
 		this.playerLabels.add(this.playerTempLabel);
 		add(this.playerTempLabel);
 		redo();
-
 		createNewHandLabel(player);
 		addBetInput(player);
 	}
 
 	public void addSplitHand(Player player){
+		// redo hand 1
 		this.playerHandLabels.get(player.getID()-1).get(0).setText(player.getHand(0).handToString());
 		redo(this.playerHandLabels.get(player.getID()-1).get(0));
 
+		// create new label for hand two
 		this.playerHandTempLabel = new JLabel(player.getHand(1).handToString());
 		this.playerHandTempLabel.setBounds(50+(player.getID()-1)*170, 180, 400, 30);
 		this.playerHandTempLabel.setForeground(Color.WHITE);
@@ -246,7 +247,6 @@ public class View extends JFrame implements PropertyChangeListener {
 			showJOptionPane(result.toString());
 			return false;
 		}
-
 		return true;
 	}
 

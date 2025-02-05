@@ -7,7 +7,6 @@ public class Controller {
     public Controller(Model model, View view){
         this.model = model;
         this.view = view;
-
         this.view.addDealButtonListener(e -> handleDealButton());
         this.view.addStandButtonListener(e -> handleStandButton());
         this.view.addHitButtonListener(e -> handleHitButton());

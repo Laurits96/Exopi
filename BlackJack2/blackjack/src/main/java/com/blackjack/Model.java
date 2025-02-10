@@ -68,9 +68,13 @@ public class Model{
 
     public void dealCard(){
         this.dealer.addToHand(this.deck.pickCard());
+        // this.dealer.addToHand(new Card(Suit.DIAMONDS, Rank.ACE));
+        // this.dealer.addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
         this.players.stream().forEach(player -> {
-            player.addToHand(this.deck.pickCard());
-            player.addToHand(this.deck.pickCard());
+            player.addToHand(new Card(Suit.DIAMONDS, Rank.ACE));
+            player.addToHand(new Card(Suit.HEARTS, Rank.ACE));
+            // player.addToHand(this.deck.pickCard());
+            // player.addToHand(this.deck.pickCard());
         });     
         support.firePropertyChange("dealt", null, null);
         if (this.players.get(0).getHand(0).isSameRank()){
@@ -139,27 +143,25 @@ public class Model{
         }
     }
 
-    public String dealerBust(StringBuilder result){
+    private String dealerBust(StringBuilder result){
         result.append("Dealer busts\n");
-        getPlayers().stream().forEach(player -> {
+        getPlayers().forEach(player -> {
             ArrayList<Integer> winningHands = new ArrayList<>();
             player.getAllHands().forEach(hand -> {
-                if(!player.isForfeited()){
-                    if (hand.isBust()){
-                        winningHands.add(0);                                              
-                    } 
-                    else if (hand.isBlackJack()){
-                        player.setBankroll(player.getBet()*2.5);
-                        winningHands.add(1);
-                    } 
-                    else{
-                        player.setBankroll(player.getBet()*2);
-                        winningHands.add(1);
-                    }
-                }
-                else{
+                if(player.isForfeited()){
                     player.setBankroll(player.getBet()*0.5);
-                    winningHands.add(0);
+                    winningHands.add(0);   
+                }
+                else if (hand.isBust()){
+                    winningHands.add(0);                           
+                } 
+                else if (hand.isBlackJack()){
+                    player.setBankroll(player.getBet()*2.5);
+                    winningHands.add(1);   
+                } 
+                else{
+                    player.setBankroll(player.getBet()*2);
+                    winningHands.add(1);   
                 }
             });
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
@@ -169,24 +171,25 @@ public class Model{
         return result.toString();
     }
 
-    public String dealerBlackJack(StringBuilder result){
+    private String dealerBlackJack(StringBuilder result){
         result.append("Dealer has BlackJack\n");
-        getPlayers().stream().forEach(player -> {
+        getPlayers().forEach(player -> {
             ArrayList<Integer> winningHands = new ArrayList<>();
             player.getAllHands().forEach(hand -> {
-                if (hand.isBlackJack()){
+                if(player.isForfeited()){
+                    player.setBankroll(player.getBet()*0.5);
+                    winningHands.add(1);
+                }
+                else if (hand.isBlackJack()){
                     player.setBankroll(player.getBet());
                     winningHands.add(1);
                 } 
+                else if(!hand.isBust() && hand.size()==5){
+                    player.setBankroll(player.getBet());
+                    winningHands.add(1);
+                }
                 else{
-                    if(player.isForfeited()){
-                        player.setBankroll(player.getBet()*0.5);
-                        winningHands.add(1);
-                    }
-                    else{
-                        System.out.println("");
-                        winningHands.add(0);
-                    }
+                    winningHands.add(0);
                 }
             });
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){
@@ -196,31 +199,29 @@ public class Model{
         return result.toString();
     }
 
-    public String dealerStopped(StringBuilder result){
+    private String dealerStopped(StringBuilder result){
         result.append("Dealer stopped at " + dealer.getHand(0).sumHand()+ "\n");
         getPlayers().stream().forEach(player -> {
             ArrayList<Integer> winningHands = new ArrayList<>();
             player.getAllHands().forEach(hand -> {
-                if(!player.isForfeited() && hand.sumHand() <= 21){
-                    if (hand.isBlackJack()){
-                        player.setBankroll(player.getBet()*2.5);
-                        winningHands.add(1);
-                    } 
-                    else if(hand.sumHand() > this.dealer.getHand(0).sumHand() || hand.size() == 5){
-                        player.setBankroll(player.getBet()*2);
-                        winningHands.add(1);
-                    }
-                    else if(hand.sumHand() == this.dealer.getHand(0).sumHand()){
-                        player.setBankroll(player.getBet());
-                        winningHands.add(1);
-                    }
-                    else{
-                        winningHands.add(0);
-                    }
-                }
-                else{
+                if(player.isForfeited()){
                     player.setBankroll(player.getBet()*0.5);
                     winningHands.add(0);
+                }
+                else if(hand.isBust()){
+                    winningHands.add(0);
+                }
+                else if (hand.isBlackJack()){
+                    player.setBankroll(player.getBet()*2.5);
+                    winningHands.add(1);
+                } 
+                else if(hand.sumHand() > this.dealer.getHand(0).sumHand() || hand.size() == 5){
+                    player.setBankroll(player.getBet()*2);
+                    winningHands.add(1);
+                }
+                else if(hand.sumHand() == this.dealer.getHand(0).sumHand()){
+                    player.setBankroll(player.getBet());
+                    winningHands.add(1);
                 }
             });
             if (winningHands.stream().mapToInt(Integer::intValue).sum()>0){

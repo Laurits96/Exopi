@@ -145,10 +145,7 @@ public class View extends JFrame implements PropertyChangeListener {
 			redo(dealerHand);
 			updatePlayerLabel();
 			resetAllPlayerHandLabel();
-			enableAddPlayerButton();
-			disableForfeitButton();
-			disableHitButton();
-			disableStandButton();
+			resetButtonAvailability();
 		}
 	}
 
@@ -195,6 +192,7 @@ public class View extends JFrame implements PropertyChangeListener {
 
 		this.playerHandLabels.get(player.getID()-1).get(1).setText(player.getHand(1).handToString());
 		this.playerHandLabels.get(player.getID()-1).forEach(l->redo(l));
+		updatePlayerLabel();
 	}
 
 	public void createNewHandLabel(Player player){
@@ -305,6 +303,14 @@ public class View extends JFrame implements PropertyChangeListener {
 	    });
 		revalidate();
 		repaint();
+	}
+
+	public void resetButtonAvailability(){
+		enableAddPlayerButton();
+		disableForfeitButton();
+		disableHitButton();
+		disableStandButton();
+		disableSplitButton();
 	}
 
 	public void showJOptionPane(String string){

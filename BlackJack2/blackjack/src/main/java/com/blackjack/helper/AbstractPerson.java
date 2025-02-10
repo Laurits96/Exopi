@@ -2,7 +2,7 @@ package com.blackjack.helper;
 
 import java.util.*;
 
-public abstract class AbstractPerson implements Person{  
+public abstract class AbstractPerson {  
     protected ArrayList<Hand> hands;
     
     AbstractPerson(){
@@ -10,22 +10,18 @@ public abstract class AbstractPerson implements Person{
         this.hands.add(new Hand());
     }
 
-    @Override
     public Hand getHand(int index){
         return this.hands.get(index);
     }
 
-    @Override
     public void addToHand(Card card){
         this.hands.get(0).add(card);
     }
 
-    @Override
     public void addToHand(Card card, int index){
         this.hands.get(index).add(card);
     }
 
-    @Override
     public void clearHands(){
         this.hands.clear();
         this.hands.add(new Hand());

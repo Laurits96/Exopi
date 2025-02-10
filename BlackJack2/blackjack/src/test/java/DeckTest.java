@@ -13,7 +13,6 @@ public class DeckTest {
     void setUp(){
         this.noDecks = 4;
         this.deck = new Deck(noDecks);
-
     }
 
     @Test
@@ -32,6 +31,4 @@ public class DeckTest {
         }
         assertEquals(0, deck.getCardDeck().size(), "All cards removed");
     }
-
-
 }

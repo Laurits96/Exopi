@@ -45,7 +45,6 @@ public class Controller {
                 }
             });
             this.view.addSplitHand(this.model.getPlayers().get(this.model.getPlayerTurn()));
-            this.model.getPlayers().get(this.model.getPlayerTurn()).setBankroll(-this.model.getPlayers().get(this.model.getPlayerTurn()).getBet());
             this.view.disableSplitButton();
             this.view.disableForfeitButton();
         }

@@ -54,5 +54,6 @@ public class Player extends AbstractPerson{
 
     public void splitHand(){
         this.hands.add(new Hand(this.hands.get(0).removeCard(1)));
+        this.bankroll-=this.bet;    
     }
 }

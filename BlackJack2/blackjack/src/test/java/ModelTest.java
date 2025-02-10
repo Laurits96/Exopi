@@ -38,19 +38,18 @@ public class ModelTest {
 
     @Test
     void testDealerBust(){
-        StringBuilder result = new StringBuilder();
         model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
         model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.SIX));
         model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.NINE));
         model.getPlayers().get(model.getPlayerTurn()).addToHand(new Card(Suit.SPADES, Rank.FIVE));
         model.getPlayers().get(model.getPlayerTurn()).addToHand(new Card(Suit.HEARTS, Rank.JACK));
-        String output = model.dealerBust(result);
+        String output = model.findWinners();
+        assertTrue(output.contains("Dealer busts"));
         assertTrue(output.contains("Player 1 won"));
     }
 
     @Test
     void testDealerBlackJack(){
-        StringBuilder result = new StringBuilder();
         model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
         model.getDealer().addToHand(new Card(Suit.HEARTS, Rank.ACE));
         model.getPlayers().get(0).addToHand(new Card(Suit.SPADES, Rank.FIVE));
@@ -58,14 +57,14 @@ public class ModelTest {
         model.addPlayer();
         model.getPlayers().get(1).addToHand(new Card(Suit.HEARTS, Rank.QUEEN));
         model.getPlayers().get(1).addToHand(new Card(Suit.SPADES, Rank.ACE));
-        String output = model.dealerBlackJack(result);
+        String output = model.findWinners();
+        assertTrue(output.contains("Dealer has BlackJack"));
         assertTrue(output.contains("Player 2 tied with"));
         assertFalse(output.contains("Player 1 tied with"));
     }
 
     @Test
     void testDealerStopped(){
-        StringBuilder result = new StringBuilder();
         model.getDealer().addToHand(new Card(Suit.DIAMONDS, Rank.JACK));
         model.getDealer().addToHand(new Card(Suit.HEARTS, Rank.SEVEN));
         model.getPlayers().get(0).addToHand(new Card(Suit.SPADES, Rank.FIVE));
@@ -73,7 +72,8 @@ public class ModelTest {
         model.addPlayer();
         model.getPlayers().get(1).addToHand(new Card(Suit.HEARTS, Rank.QUEEN));
         model.getPlayers().get(1).addToHand(new Card(Suit.SPADES, Rank.NINE));
-        String output = model.dealerStopped(result);
+        String output = model.findWinners();
+        assertTrue(output.contains("Dealer stopped at"));
         assertTrue(output.contains("Player 2 won"));
         assertFalse(output.contains("Player 1 won"));
     }

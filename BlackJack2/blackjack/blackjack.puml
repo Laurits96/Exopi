@@ -1,0 +1,199 @@
+@startuml Blackjack
+abstract class AbstractPerson {
+    ' - ArrayList<Hand> hands
+    ' + Hand getHand(int)
+    ' + void addToHand(Card)
+    ' + void addToHand(Card, int)
+    ' + void clearHands()
+    ' + void printHand()
+}
+
+class Controller {
+    ' -Model model
+    ' -View view
+    ' +Controller(Model model, View view)
+    ' +handleDealButton()
+    ' +handleStandButton()
+    ' +handleHitButton()
+    ' +handleSplitButton()
+    ' +handleForfeitButton()
+    ' +handleAddPlayerButton()
+}
+
+class View {
+    ' -ArrayList<ArrayList<JLabel>> playerHandLabels
+    ' -ArrayList<JLabel> playerLabels
+    ' -ArrayList<JTextField> betInputs
+    ' -JLabel playerHandTempLabel
+    ' -JLabel playerTempLabel
+    ' -JLabel dealerHand
+    ' -JLabel dealer
+    ' -JButton dealButton
+    ' -JButton standButton
+    ' -JButton hitButton
+    ' -JButton splitButton
+    ' -JButton forfeitButton
+    ' -JButton addPlayerButton
+    ' -Model model
+    ' +View(Model model)
+    ' +initializeUI()
+    ' +propertyChange(PropertyChangeEvent evt)
+    ' +addPlayerInfo()
+    ' +addSinglePlayerInfo(Player player)
+    ' +addSplitHand(Player player)
+    ' +createNewHandLabel(Player player)
+    ' +addBetInput(Player player)
+    ' +isBetsPlaced()
+    ' +betsPlaced() : ArrayList<Double>
+    ' +updatePlayerHandLabel(Player player)
+    ' +updatePlayerLabel()
+    ' +redo(JLabel label)
+    ' +resetAllPlayerHandLabel()
+    ' +resetButtonAvailability()
+    ' +showJOptionPane(String string)
+    ' +addDealButtonListener(ActionListener listener)
+    ' +addStandButtonListener(ActionListener listener)
+    ' +addHitButtonListener(ActionListener listener)
+    ' +addSplitButtonListener(ActionListener listener)
+    ' +addForfeitButtonListener(ActionListener listener)
+    ' +addAddPlayerButtonListener(ActionListener listener)
+    ' +enableDealButton()
+    ' +disableDealButton()
+    ' +enableHitButton()
+    ' +disableHitButton()
+    ' +enableStandButton()
+    ' +disableStandButton()
+    ' +enablesplitButton()
+    ' +disableSplitButton()
+    ' +disableAddPlayerButton()
+    ' +enableAddPlayerButton()
+    ' +enableForfeitButton()
+    ' +disableForfeitButton()
+}
+
+class Model {
+    ' - ArrayList<Player> players
+    ' - int playersTurn
+    ' - int playersNumberOfHands
+    ' - Dealer dealer
+    ' - Deck deck
+    ' - boolean gameStarted
+    ' + Model()
+    ' + ArrayList<Player> getPlayers()
+    ' + Deck getDeck()
+    ' + Dealer getDealer()
+    ' + void addPlayer()
+    ' + void setGameStarted(boolean)
+    ' + boolean getGameStarted()
+    ' + int getPlayerTurn()
+    ' + void nextPlayer()
+    ' + void dealCard()
+    ' + void stand()
+    ' + void hit(Player)
+    ' + void dealerHit()
+    ' + void forfeit(Player)
+    ' + void addBetToPlayers(ArrayList<Double>)
+    ' + String findWinners()
+    ' + String dealerBust(StringBuilder)
+    ' + String dealerBlackJack(StringBuilder)
+    ' + String dealerStopped(StringBuilder)
+    ' + boolean isAllForfeit()
+    ' + void reset()
+}
+
+class Player {
+    ' + int getID()
+    ' + Hand getHand(int)
+    ' + int numberOfHands()
+    ' + void addToHand(Card)
+    ' + void setForfeited(boolean)
+    ' + void setBet(double)
+    ' + void setBankroll(double)
+    ' + boolean isForfeited()
+    ' + void clearHands()
+    ' + ArrayList<Hand> getAllHands()
+}
+
+class Dealer {
+    ' + void addToHand(Card)
+    ' + Hand getHand(int)
+    ' + boolean play()
+}
+
+class Deck {
+    ' - ArrayList<Card> cardDeck
+    ' - int noDecks
+    ' + Deck(int)
+    ' + void InitializeDeck()
+    ' + void addDeck()
+    ' + ArrayList<Card> getCardDeck()
+    ' + Card pickCard()
+    ' + void toPrint()
+}
+
+class Hand {
+    ' - ArrayList<Card> hand
+    ' - int aceCount
+    ' + Hand()
+    ' + Hand(Card)
+    ' + void add(Card)
+    ' + Card getCard(int)
+    ' + Card removeCard(int)
+    ' + int size()
+    ' + int sumHand()
+    ' + boolean isSameRank()
+    ' + boolean isBust()
+    ' + boolean isBlackJack()
+    ' + void clearHand()
+    ' + String handToString()
+    ' + void printHand()
+}
+
+class Card {
+    ' - Suit suit
+    ' - Rank rank
+    ' + Card(Suit, Rank)
+    ' + String getSuit()
+    ' + String getRank()
+    ' + int getValue()
+    ' + String toString()
+}
+
+enum Suit {
+'     HEARTS
+'     CLUBS
+'     DIAMONDS
+'     SPADES
+}
+
+enum Rank {
+    ' TWO("2", 2)
+    ' THREE("3", 3)
+    ' FOUR("4", 4)
+    ' FIVE("5", 5)
+    ' SIX("6", 6)
+    ' SEVEN("7", 7)
+    ' EIGHT("8", 8)
+    ' NINE("9", 9)
+    ' TEN("10", 10)
+    ' JACK("J", 10)
+    ' QUEEN("Q", 10)
+    ' KING("K", 10)
+    ' ACE("A", 11)
+}
+
+Controller "1" -- "1" Model : uses
+View "1" -- "1" Controller : uses
+Model "1" *-- "many" Player : players
+Model "1" *-- "1" Dealer : dealer
+Model "1" *-- "1" Deck : deck
+Player "1" *-- "many" Hand : hands
+' Player "1" *-- "many" Card : cards
+Card "1" -- "1" Suit : has
+Card "1" -- "1" Rank : has
+Deck "1" *-- "many" Card : cardDeck
+Hand "1" *-- "many" Card : hand
+AbstractPerson <|-- Dealer : implements
+AbstractPerson <|-- Player : implements
+
+@enduml

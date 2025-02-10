@@ -15,6 +15,9 @@ public class Hand{
     public Hand(Card card1){
         this.hand = new ArrayList<>();
         this.hand.add(card1);
+        if (card1.getRank().equals("A")){
+            this.aceCount+=1;
+        }
     }
 
     public void add(Card card){
@@ -45,7 +48,8 @@ public class Hand{
                 }
             }
             return sum;
-        }else{
+        }
+        else {
             return this.hand.stream().mapToInt(Card::getValue).sum();
         }
     }
@@ -53,7 +57,10 @@ public class Hand{
     public boolean isSameRank(){
         if (size()>1){
             return this.hand.get(0).getRank().equals(this.hand.get(1).getRank());
-        }else {return false;}
+        }
+        else {
+            return false;
+        }
     }
 
     public boolean isBust(){

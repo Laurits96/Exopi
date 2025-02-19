@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class PDFDownloader {
     private static final HttpClient client = HttpClient.newBuilder()
-    .followRedirects(HttpClient.Redirect.NORMAL) // Enable redirection handling
+    .followRedirects(HttpClient.Redirect.ALWAYS) // Enable redirection handling
     .connectTimeout(Duration.ofSeconds(15))
     .build();
 

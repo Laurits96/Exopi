@@ -22,7 +22,7 @@ java -jar pdf-downloader.jar <path-to-excel-file> <yes|no>
 
 Arguments:
 1.	<path-to-excel-file> – The absolute path to the Excel file.
-2.	<yes|no> – Determines whether a certain optional feature is enabled (e.g., overwriting existing files).
+2.	<yes|no> – If the program should reference previoulsy downloaded files or not (yes - use memory to skip previously downloaded, no - download all files a new).
 Example:
 java -jar pdf-downloader.jar /home/user/documents/urls.xlsx yes
 

@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -19,20 +17,26 @@ public class Main {
     private static final int THREAD_POOL_SIZE = 5;    
     public static void main(String[] args) throws IOException{
         if ( args.length!= 2){
-            System.out.println("Please provide precisly 2 arguemnts: path to excel file, and [y/n] if refence downloads shoudl be used");
+            System.out.println("Please provide precisly 2 arguments: path to excel file, and [yes/no] if refence downloads shoudl be used");
+            return;
+        }
+
+        if(!Files.exists(Paths.get(args[0]))){
+            System.out.println("The file doesn't exists at specified location");
+            return;
+        }
+
+        if (!args[1].equals("yes") && !args[1].equals("no")){
+            System.out.println("Second argument invalid: must clearly state 'yes' or 'no'");
             return;
         }
 
         AtomicInteger activeRowNumber = new AtomicInteger(1);
-       
-        // try {
+
         File excelInputFile = new File(args[0]);
-        // } catch(IOException e){
-        //     System.out.println(e);
-        // }
         FileInputStream excelInputFileStream = new FileInputStream(excelInputFile);
         Workbook wb = new XSSFWorkbook(excelInputFileStream);
-        Sheet sheet0 = wb.getSheetAt(0);
+        Sheet inputSheet = wb.getSheetAt(0);
         excelInputFileStream.close();
 
         // Create a new folder to hold the downloaded PDFs
@@ -55,7 +59,7 @@ public class Main {
         List<Future<ArrayList<ArrayList<Integer>>>> futures = new ArrayList<>();
 
         for (int i = 0; i < THREAD_POOL_SIZE; i++) {
-            futures.add(threadExecutor.submit(new downloadTask(sheet0, activeRowNumber, referenceMemory, downloadDir)));
+            futures.add(threadExecutor.submit(new downloadTask(inputSheet, activeRowNumber, referenceMemory, downloadDir)));
         }
 
         ArrayList<ArrayList<Integer>> allResults = new ArrayList<>();
@@ -114,41 +118,5 @@ public class Main {
             workbook.write(fileOutputStream);
         }
         workbook.close();
-    }
-}
-
-class downloadTask implements Callable<ArrayList<ArrayList<Integer>>> {
-    private final Sheet sheet;
-    private final AtomicInteger activeRowNumber;
-    private final HashSet<Integer> refMem;
-    private final Path downloadDir;
-
-    public downloadTask(Sheet sheet, AtomicInteger activeRowNumber, HashSet<Integer> refMem, Path downloadDir) {
-        this.sheet = sheet;
-        this.activeRowNumber = activeRowNumber;
-        this.refMem = refMem;
-        this.downloadDir = downloadDir;
-    }
-
-    @Override
-    public ArrayList<ArrayList<Integer>> call() throws Exception {
-        ArrayList<ArrayList<Integer>> results = new ArrayList<ArrayList<Integer>>();
-        int rowNum;
-        while ((rowNum = activeRowNumber.getAndIncrement()) < sheet.getPhysicalNumberOfRows()) {
-            Row row = sheet.getRow(rowNum);
-            if (row == null) continue;
-            int id = (int) row.getCell(0).getNumericCellValue();
-            if (refMem.contains(id)) {
-                System.out.println(id + " Already downloaded");
-                continue;
-            }
-            String[] urls = new String[2];
-            urls[0] = row.getCell(1).getStringCellValue();
-            urls[1] = row.getCell(2).getStringCellValue();
-
-            ArrayList<Integer> downloadResult = PDFDownloader.downloadPDF(urls, id, downloadDir.toString());
-            results.add(downloadResult);
-        }
-        return results;
     }
 }

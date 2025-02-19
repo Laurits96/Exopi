@@ -3,91 +3,144 @@ package com.pdfdownloader;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Main {
-    
-    private static final int THREAD_POOL_SIZE = 5;    
-    public static void main(String[] args) throws IOException{
-        if ( args.length!= 2){
-            System.out.println("Please provide precisly 2 arguments: path to excel file, and [yes/no] if refence downloads shoudl be used");
+        public static void main(String[] args) throws IOException {
+        if (isArgsInvalid(args)) {
             return;
         }
 
-        if(!Files.exists(Paths.get(args[0]))){
-            System.out.println("The file doesn't exists at specified location");
-            return;
+        Path excelFilePath = Paths.get(args[0]);
+        String useReference = args[1];
+
+        HashSet<Integer> referenceMemory = loadReferenceMemory(useReference);
+
+        Workbook inputWorkbook = loadWorkbook(excelFilePath);
+        Sheet inputSheet = inputWorkbook.getSheetAt(0);
+        ArrayList<DownloadRequest> extractedExcelRows = extractExcelRows(inputSheet, referenceMemory);
+        inputWorkbook.close();
+
+        Path downloadDir = createDownloadDirectory(excelFilePath);
+
+        List<Future<DownloadResult>> futures = startDownloadTasks(extractedExcelRows, referenceMemory, downloadDir);
+
+        ArrayList<DownloadResult> allResults = collectResults(futures);
+
+        writeResultsToExcel(downloadDir.resolve("Download_Results.xlsx").toString(), allResults);
+
+        updateReferenceMemory(referenceMemory, allResults);
+    }
+
+    private static boolean isArgsInvalid(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Please provide precisely 2 arguments: path to excel file, and [yes/no] if reference downloads should be used");
+            return true;
         }
 
-        if (!args[1].equals("yes") && !args[1].equals("no")){
+        if (!Files.exists(Paths.get(args[0]))) {
+            System.out.println("The file doesn't exist at the specified location");
+            return true;
+        }
+
+        if (!args[1].equals("yes") && !args[1].equals("no")) {
             System.out.println("Second argument invalid: must clearly state 'yes' or 'no'");
-            return;
+            return true;
         }
 
-        AtomicInteger activeRowNumber = new AtomicInteger(1);
+        return false;
+    }
 
-        File excelInputFile = new File(args[0]);
-        FileInputStream excelInputFileStream = new FileInputStream(excelInputFile);
-        Workbook wb = new XSSFWorkbook(excelInputFileStream);
-        Sheet inputSheet = wb.getSheetAt(0);
-        excelInputFileStream.close();
+    private static HashSet<Integer> loadReferenceMemory(String useReference) throws IOException {
+        HashSet<Integer> referenceMemory = new HashSet<>();
+        if (useReference.equals("yes")) {
+            Path refPath = Paths.get("src/main/resources/reference.txt");
+            List<String> referenceFile = Files.readAllLines(refPath);
+            referenceFile.forEach(id -> referenceMemory.add(Integer.parseInt(id)));
+        }
+        return referenceMemory;
+    }
 
-        // Create a new folder to hold the downloaded PDFs
-        Path parentDir = excelInputFile.toPath().getParent();
+    private static Workbook loadWorkbook(Path excelFilePath) throws IOException {
+        try (FileInputStream excelInputFileStream = new FileInputStream(excelFilePath.toFile())) {
+            return new XSSFWorkbook(excelInputFileStream);
+        }
+    }
+
+    private static ArrayList<DownloadRequest> extractExcelRows(Sheet sheet, HashSet<Integer> referenceMemory){
+        ArrayList<DownloadRequest> extractedExcelRows = new ArrayList<>();
+        for (int i = 1; i<sheet.getPhysicalNumberOfRows(); i++){
+            Row row = sheet.getRow(i);
+            if (row == null){
+                continue;
+            }
+            int id = (int) row.getCell(0).getNumericCellValue();
+            if (referenceMemory.contains(id)){
+                System.out.println("\t" + id + " already downloaded");
+                continue;
+            }
+            String[] urls = new String[2];
+            urls[0] = row.getCell(1).getStringCellValue();
+            urls[1] = row.getCell(2).getStringCellValue();
+            extractedExcelRows.add(new DownloadRequest(id, urls));
+        }
+        return extractedExcelRows;
+    }
+
+    private static Path createDownloadDirectory(Path excelFilePath) throws IOException {
+        Path parentDir = excelFilePath.getParent();
         Path downloadDir = parentDir.resolve("Downloaded_PDFs");
         if (!Files.exists(downloadDir)) {
             Files.createDirectory(downloadDir);
         }
+        return downloadDir;
+    }
 
-        // Initiate reference memory
-        HashSet<Integer> referenceMemory = new HashSet<>();
-        Path refPath = Paths.get("src/main/resources/reference.txt");
-        if(args[1] != "no"){
-            List<String> referenceFile = Files.readAllLines(refPath);
-            referenceFile.stream().forEach(id -> referenceMemory.add(Integer.parseInt(id)));
+    private static List<Future<DownloadResult>> startDownloadTasks(ArrayList<DownloadRequest> extractedExcelRows, HashSet<Integer> referenceMemory, Path downloadDir) {
+        ExecutorService threadExecutor = Executors.newCachedThreadPool();
+        List<Future<DownloadResult>> futures = new ArrayList<>();
+
+        for (int i = 0; i < extractedExcelRows.size(); i++) {
+            futures.add(threadExecutor.submit(new PDFDownloader(extractedExcelRows.get(i), downloadDir)));
         }
 
-        ExecutorService threadExecutor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+        threadExecutor.shutdown();
+        return futures;
+    }
 
-        List<Future<ArrayList<ArrayList<Integer>>>> futures = new ArrayList<>();
-
-        for (int i = 0; i < THREAD_POOL_SIZE; i++) {
-            futures.add(threadExecutor.submit(new downloadTask(inputSheet, activeRowNumber, referenceMemory, downloadDir)));
-        }
-
-        ArrayList<ArrayList<Integer>> allResults = new ArrayList<>();
-        for (Future<ArrayList<ArrayList<Integer>>> future : futures) {
+    private static ArrayList<DownloadResult> collectResults(List<Future<DownloadResult>> futures) {
+        ArrayList<DownloadResult> allResults = new ArrayList<>();
+        for (Future<DownloadResult> future : futures) {
             try {
-                allResults.addAll(future.get());
+                allResults.add(future.get());
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         }
-        
-        writeResultsToExcel(parentDir.resolve("Download_Results.xlsx").toString(), allResults);
+        return allResults;
+    }
+
+    private static void updateReferenceMemory(HashSet<Integer> referenceMemory, ArrayList<DownloadResult> allResults) throws IOException {
+        Path refPath = Paths.get("src/main/resources/reference.txt");
         List<String> referenceMemoryList = new ArrayList<>();
-        for (ArrayList<Integer> result : allResults) {
-            if (result.get(1) == 1) {
-                referenceMemoryList.add(result.get(0).toString());
+        for (DownloadResult result : allResults) {
+            if (result.firstUrlSucces() || result.secondUrlSucces()) {
+                referenceMemoryList.add(String.valueOf(result.id()));
             }
         }
         Files.write(refPath, referenceMemoryList);
-        threadExecutor.shutdown();
-        wb.close();
     }
 
-    private static void writeResultsToExcel(String filePath, ArrayList<ArrayList<Integer>>  results) throws IOException{
+    private static void writeResultsToExcel(String filePath, ArrayList<DownloadResult> results) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Download Results");
 
-         // Create cell styles for green and red
+        // Create cell styles for green and red
         CellStyle greenCellStyle = workbook.createCellStyle();
         greenCellStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
         greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -96,20 +149,36 @@ public class Main {
         redCellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
         redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
+        Row row = sheet.createRow(0);
+        Cell idCell = row.createCell(0);
+        idCell.setCellValue("id");
+        Cell firstUrlCell = row.createCell(1);
+        firstUrlCell.setCellValue("1. URL");
+        Cell secondUrlCell = row.createCell(2);
+        secondUrlCell.setCellValue("2. URL");
+
         // Write results to the new sheet
-        int rowIndex = 0;
-        for (ArrayList<Integer> result : results) {
-            Row row = sheet.createRow(rowIndex++);
-            Cell idCell = row.createCell(0);
-            idCell.setCellValue(result.get(0));
-            Cell statusCell = row.createCell(1);
-           // Set cell style based on status
-            if (result.get(1) == 1) {
-                statusCell.setCellValue("Succes");
-                statusCell.setCellStyle(greenCellStyle);
+        int rowIndex = 1;
+        for (DownloadResult result : results) {
+            row = sheet.createRow(rowIndex++);
+            idCell = row.createCell(0);
+            idCell.setCellValue(result.id());
+            firstUrlCell = row.createCell(1);
+            secondUrlCell = row.createCell(2);
+            // Set cell style based on status
+            if (result.firstUrlSucces()) {
+                firstUrlCell.setCellValue("Success");
+                firstUrlCell.setCellStyle(greenCellStyle);
             } else {
-                statusCell.setCellStyle(redCellStyle);
-                statusCell.setCellValue("Error");
+                firstUrlCell.setCellStyle(redCellStyle);
+                firstUrlCell.setCellValue("Error");
+            }
+            if (result.secondUrlSucces()) {
+                secondUrlCell.setCellValue("Success");
+                secondUrlCell.setCellStyle(greenCellStyle);
+            } else {
+                secondUrlCell.setCellStyle(redCellStyle);
+                secondUrlCell.setCellValue("Error");
             }
         }
 

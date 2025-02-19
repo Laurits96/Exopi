@@ -1,3 +1,4 @@
+com\pdfdownloader\DownloadResult.class
 com\pdfdownloader\PDFDownloader.class
-com\pdfdownloader\downloadTask.class
+com\pdfdownloader\DownloadRequest.class
 com\pdfdownloader\Main.class
